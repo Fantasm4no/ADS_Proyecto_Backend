@@ -29,9 +29,9 @@ exports.createRutina = async (req, res) => {
 // Actualizar una rutina existente
 exports.updateRutina = async (req, res) => {
   const { id } = req.params;
-  const { dia, ejercicio, repeticiones } = req.body;
+  const { dia, ejercicio, repeticiones, descripcion, nivel, duracion, recomendaciones } = req.body;
   try {
-    const rutinaActualizada = await Rutina.update(id, dia, ejercicio, repeticiones);
+    const rutinaActualizada = await Rutina.update(id, dia, ejercicio, repeticiones, descripcion, nivel, duracion, recomendaciones);
     res.status(200).json(rutinaActualizada);
   } catch (error) {
     console.error(error);

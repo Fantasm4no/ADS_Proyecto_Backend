@@ -1,18 +1,23 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const authRoutes = require('./routes/authRoutes');  // Rutas de autenticación
-const rutinaRoutes = require('./routes/rutinaRoutes');  // Rutas de las rutinas
 
-dotenv.config();  // Cargar las variables de entorno
+const authRoutes = require('./routes/authRoutes');
+const rutinaRoutes = require('./routes/rutinaRoutes');
+const productRoutes = require('./routes/productRoutes');
+const carritoRoutes = require('./routes/carritoRoutes'); // Rutas del carrito
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
-app.use(express.json());  // Para poder leer el cuerpo de las solicitudes en formato JSON
+app.use(express.json());
 
 // Rutas
-app.use('/api/auth', authRoutes);  // Ruta de autenticación
-app.use('/api/rutinas', rutinaRoutes);  // Ruta de las rutinas
+app.use('/api/auth', authRoutes);
+app.use('/api/rutinas', rutinaRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/carrito', carritoRoutes); // Usa las rutas reales del carrito
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
