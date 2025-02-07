@@ -1,7 +1,7 @@
 const express = require('express');
 const {
   getCarritoByCliente,
-  addProductoToCarrito,
+  addToCarrito,  // Aquí unificamos la función para productos y membresías
   updateCantidad,
   deleteProducto,
   vaciarCarrito,
@@ -10,21 +10,22 @@ const {
 
 const router = express.Router();
 
-// Ruta para obtener productos del carrito
+// Ruta para obtener los productos y membresías en el carrito
 router.get('/', getCarritoByCliente);
 
-// Ruta para añadir producto al carrito
-router.post('/', addProductoToCarrito);
+// Ruta para añadir un producto o membresía al carrito
+router.post('/', addToCarrito);
 
-router.post('/finalizar-compra', finalizarCompra);
-
-// Ruta para actualizar cantidad de un producto
+// Ruta para actualizar cantidad de un producto en el carrito
 router.put('/:id', updateCantidad);
 
-// Ruta para eliminar un producto del carrito
+// Ruta para eliminar un producto o membresía del carrito
 router.delete('/:id', deleteProducto);
 
-// Ruta para vaciar el carrito
+// Ruta para vaciar el carrito del usuario
 router.delete('/', vaciarCarrito);
+
+// Ruta para finalizar compra
+router.post('/finalizar-compra', finalizarCompra);
 
 module.exports = router;

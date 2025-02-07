@@ -3,7 +3,7 @@ const Product = require("../models/Product");
 exports.getAllProducts = async (req, res) => {
   try {
     const products = await Product.getAll();
-    console.log("Productos obtenidos desde la base de datos:", products); // Log para confirmar
+    console.log("Productos obtenidos desde la base de datos:"); // Log para confirmar
     res.json(products);
   } catch (error) {
     console.error("Error al obtener productos:", error);
@@ -27,18 +27,20 @@ exports.createProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { stock } = req.body; // Solo necesitamos el stock para este caso
+  const { nombre, descripcion, precio, stock, imagen_url } = req.body; // 👈 Ahora también recibe nombre, descripción y precio
+
   try {
-    const updatedProduct = await Product.updateStock(id, stock);
+    const updatedProduct = await Product.update(id, nombre, descripcion, precio, stock, imagen_url);
     if (!updatedProduct) {
       return res.status(404).json({ msg: "Producto no encontrado" });
     }
-    res.json(updatedProduct);
+    res.json({ msg: "Producto actualizado con éxito", producto: updatedProduct });
   } catch (error) {
-    console.error("Error al actualizar el stock:", error);
-    res.status(500).json({ msg: "Error al actualizar el stock" });
+    console.error("Error al actualizar el producto:", error);
+    res.status(500).json({ msg: "Error al actualizar el producto" });
   }
 };
+
 
 exports.deleteProduct = async (req, res) => {
   const { id } = req.params;

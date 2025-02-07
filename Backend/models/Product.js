@@ -46,15 +46,17 @@ class Product {
   static async update(id, nombre, descripcion, precio, stock, imagen_url) {
     try {
       const { rows } = await pool.query(
-        'UPDATE productos SET nombre=$1, descripcion=$2, precio=$3, stock=$4, imagen_url=$5 WHERE id=$6 RETURNING *',
+        `UPDATE productos 
+         SET nombre=$1, descripcion=$2, precio=$3, stock=$4, imagen_url=$5 
+         WHERE id=$6 RETURNING *`,
         [nombre, descripcion, precio, stock, imagen_url, id]
       );
       return rows[0];
     } catch (error) {
-      console.error('Error al actualizar producto:', error);
+      console.error("Error al actualizar producto:", error);
       throw error;
     }
-  }
+  }  
 
   static async delete(id) {
     try {

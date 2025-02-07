@@ -24,17 +24,16 @@ class Rutina {
   }
 
   // Actualizar una rutina existente
-  static async update(id, dia, ejercicio, repeticiones, descripcion, nivel, duracion, recomendaciones) {
+  static async update(id, dia, ejercicio, repeticiones, descripcion, nivel, recomendaciones) {
     const query = `
       UPDATE rutinas
-      SET dia = $1, ejercicio = $2, repeticiones = $3, descripcion = $4, nivel = $5, duracion = $6, recomendaciones = $7
-      WHERE id = $8 RETURNING *;
+      SET dia = $1, ejercicio = $2, repeticiones = $3, descripcion = $4, nivel = $5, recomendaciones = $6
+      WHERE id = $7 RETURNING *;
     `;
-    const values = [dia, ejercicio, repeticiones, descripcion, nivel, duracion, recomendaciones, id];
+    const values = [dia, ejercicio, repeticiones, descripcion, nivel, recomendaciones, id];
     const result = await pool.query(query, values);
     return result.rows[0];
-  }
-
+  }  
 
   // Eliminar una rutina
   static async delete(id) {
