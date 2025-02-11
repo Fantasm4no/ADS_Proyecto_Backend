@@ -28,27 +28,42 @@ exports.getCarritoByCliente = async (req, res) => {
 };
 
 exports.addToCarrito = async (req, res) => {
-  const { cliente_id, producto_id, membresia_id, cantidad } = req.body;
+  const { cliente_id, membresia_id, producto_id, cantidad } = req.body;
 
-  if (!cliente_id || (!producto_id && !membresia_id)) {
+  if (!cliente_id || (!membresia_id && !producto_id)) {
     return res.status(400).json({ msg: "Datos inválidos para añadir al carrito" });
   }
 
   try {
-    let item;
-    if (producto_id) {
-      await Product.checkStock(producto_id, cantidad);
-      item = await Carrito.addProducto(cliente_id, producto_id, cantidad);
-    } else if (membresia_id) {
-      item = await Carrito.addMembresia(cliente_id, membresia_id);
+    if (membresia_id) {
+      // Verificar si el usuario ya tiene una membresía activa en los últimos 30 días
+      const checkMembership = await pool.query(
+        `SELECT * FROM historial_compras 
+         WHERE user_id = $1 
+         AND membresia_id IS NOT NULL 
+         AND fecha >= NOW() - INTERVAL '30 days'`, 
+        [cliente_id]
+      );
+
+      if (checkMembership.rows.length > 0) {
+        return res.status(400).json({ msg: "Ya tienes una membresía activa. No puedes comprar otra hasta que termine el mes." });
+      }
+
+      // Si no tiene membresía activa, permitir agregarla al carrito
+      const nuevaMembresia = await Carrito.addMembresia(cliente_id, membresia_id);
+      return res.status(201).json(nuevaMembresia);
     }
 
-    res.status(201).json(item);
+    // Si es un producto, proceder normalmente
+    const nuevoItem = await Carrito.addProducto(cliente_id, producto_id, cantidad);
+    res.status(201).json(nuevoItem);
+
   } catch (error) {
     console.error("Error al añadir al carrito:", error.message);
     res.status(400).json({ msg: error.message });
   }
 };
+
 
 
 // Actualizar cantidad de un producto en el carrito
@@ -129,70 +144,65 @@ exports.finalizarCompra = async (req, res) => {
   }
 
   try {
-    // Obtener productos y membresías en el carrito
+    // Obtener los productos y membresías en el carrito
     const carritoProductos = await Carrito.getByClienteId(cliente_id);
 
     if (!carritoProductos || carritoProductos.length === 0) {
       return res.status(400).json({ msg: "El carrito está vacío." });
     }
 
-    console.log("Carrito del cliente:", carritoProductos);
-
     for (const item of carritoProductos) {
       let total = 0;
 
-      if (item.producto_id) {
-        // Validar producto
+      if (item.membresia_id) {
+        // Verificar si ya tiene una membresía activa
+        const checkMembership = await pool.query(
+          `SELECT * FROM historial_compras 
+           WHERE user_id = $1 
+           AND membresia_id IS NOT NULL 
+           AND fecha >= NOW() - INTERVAL '30 days'`, 
+          [cliente_id]
+        );
+
+        if (checkMembership.rows.length > 0) {
+          return res.status(400).json({ msg: "Ya tienes una membresía activa. No puedes comprar otra hasta que termine el mes." });
+        }
+
+        const membresia = await Membresia.getById(item.membresia_id);
+        if (!membresia) {
+          return res.status(404).json({ msg: `La membresía con ID ${item.membresia_id} no existe.` });
+        }
+
+        total = membresia.precio;
+      } else if (item.producto_id) {
         const producto = await Product.getById(item.producto_id);
         if (!producto) {
           return res.status(404).json({ msg: `El producto con ID ${item.producto_id} no existe.` });
         }
         if (producto.stock < item.cantidad) {
-          return res.status(400).json({
-            msg: `El producto "${producto.nombre}" no tiene suficiente stock. Disponible: ${producto.stock}.`,
-          });
+          return res.status(400).json({ msg: `El producto "${producto.nombre}" no tiene suficiente stock.` });
         }
 
-        // Calcular el total para el producto
         total = producto.precio * item.cantidad;
-
-        // Reducir el stock del producto
         await Product.updateStock(item.producto_id, producto.stock - item.cantidad);
-      } else if (item.membresia_id) {
-        // Validar membresía
-        const membresia = await Membresia.getById(item.membresia_id);
-        if (!membresia) {
-          return res.status(404).json({ msg: `La membresía con ID ${item.membresia_id} no existe.` });
-        }
-        console.log(`Membresía validada: ${membresia.nombre}`);
-
-        // Calcular el total para la membresía
-        total = membresia.precio;
       }
 
-      // Insertar en historial de compras
-      const historialQuery = `
-          INSERT INTO historial_compras (user_id, producto_id, membresia_id, cantidad, total)
-          VALUES ($1, $2, $3, $4, $5)
-      `;
-      await pool.query(historialQuery, [
-          cliente_id,
-          item.producto_id || null,
-          item.membresia_id || null,
-          item.cantidad || 1,  // Si es membresía, cantidad será 1 por defecto
-          total  // Asegurar que siempre se inserte un total válido
-      ]);
+      await pool.query(
+        `INSERT INTO historial_compras (user_id, producto_id, membresia_id, cantidad, total, fecha) 
+         VALUES ($1, $2, $3, $4, $5, NOW())`,
+        [cliente_id, item.producto_id || null, item.membresia_id || null, item.cantidad || 1, total]
+      );
     }
 
-    // Vaciar el carrito después de procesar la compra
     await Carrito.vaciarCarrito(cliente_id);
 
     res.status(200).json({ msg: "Compra finalizada con éxito." });
   } catch (error) {
-    console.error("Error interno al finalizar la compra:", error);
+    console.error("Error al finalizar la compra:", error);
     res.status(500).json({ msg: "Error interno al finalizar la compra." });
   }
 };
+
 
 
 
