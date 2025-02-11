@@ -1,5 +1,6 @@
 # Instrucciones para Configurar la Base de Datos y Ejecutar la Aplicación
 
+
 ## 1. Creación Manual de la Base de Datos en pgAdmin
 
 Para configurar la base de datos manualmente en pgAdmin, sigue estos pasos:
@@ -30,6 +31,8 @@ Para configurar la base de datos manualmente en pgAdmin, sigue estos pasos:
 ---
 
 ## 3. Configuración de la Aplicación
+Primeramente debes clonar los dos repositorios "ADS_Proyecto" y el repositorio "frontend" en una sola carpeta.
+Luego sigue los siguientes pasos:
 
 Para ejecutar la aplicación correctamente, es necesario configurar las credenciales de acceso a la base de datos en los archivos `db.js` y `.env`.
 
@@ -96,7 +99,7 @@ Para ejecutar la aplicación, sigue estos pasos:
 
 1. En otra terminal, navega a la carpeta del frontend con:
    ```sh
-   cd APP_ADS/frontend
+   cd /frontend
    ```
 2. Instala las dependencias:
    ```sh
