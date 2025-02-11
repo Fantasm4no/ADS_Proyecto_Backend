@@ -111,8 +111,23 @@ Para ejecutar la aplicación, sigue estos pasos:
    ```
 
 ---
+## 5. Configuración de la IP para Red Local
 
-## 5. Explicación del Funcionamiento de la Aplicación
+Si deseas acceder al backend desde otra máquina en la misma red, es necesario configurar la IP del servidor.
+
+1. Abre una terminal en la máquina donde se ejecuta el backend.
+2. Ejecuta el siguiente comando para obtener la dirección IP local:
+   ```sh
+   ipconfig  # Para Windows
+   ifconfig  # Para Linux/Mac (puede requerir instalación)
+   ```
+3. Copia la dirección IPv4 de la conexión activa (por ejemplo, `192.168.1.100`).
+4. Abre el archivo `frontend\src\config.js` y actualiza la variable `API_URL` con la IP obtenida:
+   ```js
+   export const API_URL = "http://192.xxx.x.xxx:5000";
+   ```
+
+## 6. Explicación del Funcionamiento de la Aplicación
 
 La aplicación `EG Fitness Gym` permite:
 
@@ -129,7 +144,7 @@ La aplicación `EG Fitness Gym` permite:
 
 ---
 
-## 6. Notas Adicionales
+## 7. Notas Adicionales
 
 - Es importante cambiar las credenciales en `.env` y `db.js`.
 - Se recomienda ejecutar la aplicación en un entorno de desarrollo antes de desplegarla en producción.
