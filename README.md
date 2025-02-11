@@ -96,7 +96,7 @@ Para ejecutar la aplicación, sigue estos pasos:
 
 1. En otra terminal, navega a la carpeta del frontend con:
    ```sh
-   cd APP_ADS/frontend
+   cd /frontend
    ```
 2. Instala las dependencias:
    ```sh
